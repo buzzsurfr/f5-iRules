@@ -1,0 +1,29 @@
+#!/usr/bin/env tclsh
+#
+# log_http_headers.irule
+#
+# Sometimes you need debug connection information logged.  This will only log
+# if the IP address matches XX.XX.XX.XX, thus only capturing your traffic and
+# not bogging down the syslog server with production logs.
+#
+when HTTP_REQUEST {
+   if { ( [IP::addr [IP::client_addr] equals XX.XX.XX.XX] ) } {
+	   set LogString "Client [IP::client_addr]:[TCP::client_port] -> [HTTP::host][HTTP::uri]"
+	   log local0. "============================================="
+	   log local0. "$LogString (request)"
+	   foreach aHeader [HTTP::header names] {
+		  log local0. "$aHeader: [HTTP::header value $aHeader]"
+	   }
+	   log local0. "============================================="
+   }
+}
+when HTTP_RESPONSE {
+   if { ( [IP::addr [IP::client_addr] equals XX.XX.XX.XX] ) } {
+	   log local0. "============================================="
+	   log local0. "$LogString (response) - status: [HTTP::status]"
+	   foreach aHeader [HTTP::header names] {
+		  log local0. "$aHeader: [HTTP::header value $aHeader]"
+	   }
+	   log local0. "============================================="   
+	}   
+}

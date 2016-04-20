@@ -1,0 +1,30 @@
+#!/usr/bin/env tclsh
+#
+# fix_content_length_header.irule
+#
+# Customer had an issue where certain pages in application would return
+# multiple Content-Length headers (breaking RFC2616).  The first Content-Length
+# header was accurate.  This iRule will only flag files within the bad_files
+# data group (String dg with keys only) and upon response only return the first
+# Content-Length header.
+#
+when HTTP_REQUEST {
+	set modify_cl 0
+	if {[class match [HTTP::uri] contains bad_files} {
+		set modify_cl 1
+	}
+}
+
+when HTTP_RESPONSE {
+	if {[string is true $modify_cl]} {
+		foreach value [HTTP::header values "Content-Length"] {
+			if {![info exists content_length]} {
+				set content_length $value
+			}
+		}
+		HTTP::header remove "Content-Length"
+		HTTP::header insert "Content-Length" $content_length
+		unset content_length
+	}
+	unset modify_cl  
+}

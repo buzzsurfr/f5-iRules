@@ -1,0 +1,23 @@
+#!/usr/bin/env tclsh
+#
+# content-switch_path.irule
+#
+# This performs a simple content-switch sending VIP traffic to a pool based on
+# the HTTP path  While short, this is very powerful as it uses a data
+# group to define how to balance traffic (which is much more GUI-friendly).
+#
+# Data-Group Example:
+#   ltm data-group internal mysite_vs_csw {
+#     records {
+#       /site1/ {
+#         data mysite1_pool
+#       }
+#       /site2/ {
+#         data mysite2_pool
+#       }
+#     type string
+#   }
+#
+when HTTP_REQUEST {
+  pool [class match -value -- [string tolower [HTTP::path]] equals [virtual name]_csw]
+}

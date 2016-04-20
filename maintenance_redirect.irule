@@ -1,0 +1,11 @@
+#!/usr/bin/env tclsh
+#
+# maintenance_redirect.irule
+#
+# Redirect traffic to a maintenance page if all pool members are down.
+#
+when HTTP_REQUEST { 
+  if { [active_members [LB::server pool]] < 1 } {
+    HTTP::redirect "http://mysite/maintenance.html"
+  }
+}
